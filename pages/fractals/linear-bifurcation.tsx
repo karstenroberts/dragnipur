@@ -1,6 +1,7 @@
-import type { Dpr } from '@react-three/fiber';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, Dpr, extend, useFrame, useThree } from '@react-three/fiber';
+import { useRef } from 'react';
 import styled from 'styled-components';
+import { FirstPersonControls } from '@react-three/drei';
 
 const CanvasContainer = styled.div`
 	height: 90vh;
@@ -27,7 +28,7 @@ const PointMesh = ({x, y}: PointMeshProps) => (
 		<planeBufferGeometry args={[1,1]} />
 		<meshBasicMaterial color="white" />
 	</mesh>
-)
+);
 
 const getAllPoints = ({r, x}: CreatePointsProps) => {
 	const points = createPoints(r);
@@ -46,8 +47,8 @@ const UsableCoordinates = () => (
 const accuracyValue=.001
 
 const fractalFunction = (r: number, x: number) => {
+	//	return r * (1-(r*(1-x)))
 	return r*(1-(r*(1-(r*(1-x)*x))*(r*(1-x)*x)))*(r*(1-(r*(1-x)*x))*(r*(1-x)*x));
-//	return r * (1-(r*(1-x)))
 }
 
 const createPoints = (r: number) => {
@@ -59,7 +60,7 @@ const createPoints = (r: number) => {
 				  && (fractalFunction(rIncrement, fractalFunction(rIncrement,fractalFunction(rIncrement, fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement, fractalFunction(rIncrement,fractalFunction(rIncrement, fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement, fractalFunction(rIncrement, fractalFunction(rIncrement,fractalFunction(rIncrement, fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement, fractalFunction(rIncrement,fractalFunction(rIncrement, fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,fractalFunction(rIncrement,xIncrement+accuracyValue))))))))))))))))))))))))))))))))>xIncrement+accuracyValue))){//This determines if the point is part of the graph, because for each iteration only every other intersection for each value of r actually is graphed, and all of those that shouldn't be come from above the line, and exit below 
 					const point = {xCoord: rIncrement, yCoord: xIncrement};
 					points.push(point);
-//					console.log(JSON.stringify(point))
+					//					console.log(JSON.stringify(point))
 				}
 			}
 		}
@@ -67,14 +68,13 @@ const createPoints = (r: number) => {
 	return points;
 }
 
-
 const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : [1, 2] as Dpr;
 
 const LinearBifurcation = (props: unknown) => {
 	return (
 		<CanvasContainer>
-			<Canvas orthographic dpr={dpr} >
-				<UsableCoordinates />
+			<Canvas dpr={dpr} orthographic >
+				<FirstPersonControls />
 				{getAllPoints({r: 1.1, x:0})}
 			</Canvas>
 		</CanvasContainer>
