@@ -1,7 +1,8 @@
+
 import { Canvas, Dpr, extend, useFrame, useThree } from '@react-three/fiber';
 import { useRef } from 'react';
 import styled from 'styled-components';
-import { FirstPersonControls } from '@react-three/drei';
+import { FlyControls } from '@react-three/drei';
 
 const CanvasContainer = styled.div`
 	height: 90vh;
@@ -74,7 +75,8 @@ const LinearBifurcation = (props: unknown) => {
 	return (
 		<CanvasContainer>
 			<Canvas dpr={dpr} orthographic >
-				<FirstPersonControls />
+				<FlyControls />
+				<UsableCoordinates />
 				{getAllPoints({r: 1.1, x:0})}
 			</Canvas>
 		</CanvasContainer>
