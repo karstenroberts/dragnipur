@@ -1,39 +1,44 @@
-import * as THREE from 'three'
-import { createRoot } from 'react-dom/client'
-import React, { useRef, useState } from 'react'
-import { Canvas, useFrame, ThreeElements } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber';
+import React, { useState } from 'react';
+import { Cylinder3D } from './components';
+import { MapControls, OrbitControls, OrthographicCamera, PerspectiveCamera, TransformControls } from '@react-three/drei';
+import { Vector3 } from 'three';
 
-function Box(props: ThreeElements['mesh']) {
-  const mesh = useRef<THREE.Mesh>(null!)
-  const [hovered, setHover] = useState(false)
-  const [active, setActive] = useState(false)
-  useFrame((state, delta) => (mesh.current.rotation.x += 0.01))
-  return (
-    <mesh
-      {...props}
-      ref={mesh}
-      scale={active ? 1.5 : 1}
-      onClick={(_e) => setActive(!active)}
-      onPointerOver={(_e) => setHover(true)}
-      onPointerOut={(_e) => setHover(false)}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
-    </mesh>
-  )
+interface CameraDollyProps {
+	isZoom: boolean;
 }
 
-const ReactThreeFiber = (props: unknown) => {
-	return (
-		<>
-			<div>Hello World!</div>
-			<Canvas>
-				<ambientLight />
-				<pointLight position={[10, 10, 10]} />
-				<Box position={[-1.2, 0, 0]} />
-				<Box position={[1.2, 0, 0]} />
-			</Canvas>
-		</>
-	)
+const CameraDolly = ({isZoom}: CameraDollyProps) => {
+	const vec = new Vector3();
+	useFrame((state) => {
+		const step = .1;
+		const x = isZoom ? 5 : 0;
+		const y = isZoom ? 5 : 10;
+		const z = isZoom ? 5 : 10;
+
+		state.camera.position.lerp(vec.set(x, y, z), step);
+		state.camera.lookAt(0, 0, 0);
+		state.camera.updateProjectionMatrix();
+			
+	})
+	return null;
+}
+const Playground = () => {
+    const [ isZoom, setIsZoom ] = useState( false );
+
+    return (
+        <>
+            <section style={{ height: "100vh", width: "100vw" }}>
+                <Canvas orthographic camera={{ position: [ 0, 0, 50 ], zoom: 10, up: [ 0, 0, 1 ], far: 10000 }} >
+                    <pointLight position={[ 10, 10, 10 ]} />
+                    <ambientLight />
+                    <Cylinder3D position={[ -1.2, 0, 0 ]} />
+                    <Cylinder3D position={[ 1.2, 0, 0 ]} setIsZoom={setIsZoom} isZoom={isZoom} />
+                    <MapControls />
+                </Canvas>
+        </section >
+        </>
+    )
 }
 
-export default ReactThreeFiber;
+export default Playground;
