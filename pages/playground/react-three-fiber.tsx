@@ -1,7 +1,7 @@
 import { Canvas, useFrame } from '@react-three/fiber';
 import React, { useState } from 'react';
-import { Cylinder3D } from './components';
-import { MapControls, OrbitControls, OrthographicCamera, PerspectiveCamera, TransformControls } from '@react-three/drei';
+import { Cylinder3D } from '../../components';
+import { MapControls } from '@react-three/drei';
 import { Vector3 } from 'three';
 
 interface CameraDollyProps {
