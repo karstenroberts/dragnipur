@@ -1,8 +1,10 @@
+'use client'
+
 import { MapControls } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useState } from 'react';
 import { Vector3 } from 'three';
-import { Cylinder3D } from '../../components';
+import { Cylinder3D } from '../../../components';
 
 interface CameraDollyProps {
     isZoom: boolean;
@@ -22,7 +24,7 @@ const CameraDolly = ({ isZoom }: CameraDollyProps) => {
     return null;
 }
 
-const Playground = () => {
+export default function Playground() {
     const [isZoom, setIsZoom] = useState(false);
     return (
         <>
@@ -34,9 +36,7 @@ const Playground = () => {
                     <Cylinder3D position={[1.2, 0, 0]} setIsZoom={setIsZoom} isZoom={isZoom} />
                     <MapControls />
                 </Canvas>
-            </section >
+            </section>
         </>
     )
-}
-
-export default Playground;
+} 
