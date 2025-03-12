@@ -5,6 +5,7 @@ import { Canvas } from '@react-three/fiber'
 import { MapControls } from '@react-three/drei'
 import * as THREE from 'three'
 import styled from 'styled-components'
+import { createPortal } from 'react-dom'
 
 const CanvasContainer = styled.div`
     height: 100vh;
@@ -13,6 +14,15 @@ const CanvasContainer = styled.div`
     background: #121212;
     position: relative;
     overflow: hidden;
+
+    & > div:first-child {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
 `
 
 const ControlPanel = styled.div`
@@ -30,6 +40,8 @@ const ControlPanel = styled.div`
     overflow-y: auto;
     backdrop-filter: blur(5px);
     color: white;
+    z-index: 100;
+    pointer-events: auto;
 
     @media (max-width: 768px) {
         top: auto;
@@ -59,35 +71,18 @@ const TooltipContainer = styled.div`
     position: relative;
     display: inline-block;
     width: 100%;
-
-    &:hover .tooltip {
-        visibility: visible;
-        opacity: 1;
-    }
-
-    @media (max-width: 768px) {
-        &:hover .tooltip {
-            display: none;
-        }
-    }
 `
 
 const Tooltip = styled.div`
-    visibility: hidden;
-    position: absolute;
-    z-index: 1;
-    top: 50%;
-    right: calc(100% + 10px);
-    transform: translateY(-50%);
+    position: fixed;
     padding: 8px;
     background: rgba(0, 0, 0, 0.8);
     color: white;
     border-radius: 4px;
     width: 200px;
     font-size: clamp(10px, 1.5vw, 12px);
-    opacity: 0;
-    transition: opacity 0.2s;
     text-align: left;
+    pointer-events: none;
 
     &::after {
         content: "";
@@ -197,6 +192,7 @@ const BackButton = styled(Button)`
     background: rgba(30, 30, 30, 0.9);
     color: #4a90e2;
     backdrop-filter: blur(5px);
+    pointer-events: auto;
     
     &:hover {
         background: rgba(45, 45, 45, 0.95);
@@ -218,6 +214,7 @@ const LegendContainer = styled.div`
     backdrop-filter: blur(5px);
     width: clamp(200px, 90vw, 300px);
     color: white;
+    pointer-events: auto;
 
     @media (max-width: 768px) {
         top: clamp(10px, 3vh, 20px);
@@ -327,15 +324,60 @@ function PointCloud({ points }: { points: Point[] }) {
 }
 
 function ControlWithTooltip({ label, tooltip, children }: { label: string, tooltip: string, children: React.ReactNode }) {
+    const [showTooltip, setShowTooltip] = useState(false);
+    const [position, setPosition] = useState({ top: 0, left: 0 });
+    const labelRef = useRef<HTMLLabelElement>(null);
+
+    const updatePosition = useCallback(() => {
+        if (labelRef.current) {
+            const rect = labelRef.current.getBoundingClientRect();
+            setPosition({
+                top: rect.top + rect.height / 2,
+                left: rect.left - 10
+            });
+        }
+    }, []);
+
+    useEffect(() => {
+        if (showTooltip) {
+            updatePosition();
+            window.addEventListener('resize', updatePosition);
+            window.addEventListener('scroll', updatePosition);
+            return () => {
+                window.removeEventListener('resize', updatePosition);
+                window.removeEventListener('scroll', updatePosition);
+            };
+        }
+    }, [showTooltip, updatePosition]);
+
     return (
         <TooltipContainer>
-            <label>
+            <label
+                ref={labelRef}
+                onMouseEnter={() => {
+                    updatePosition();
+                    setShowTooltip(true);
+                }}
+                onMouseLeave={() => setShowTooltip(false)}
+            >
                 {label}
                 {children}
             </label>
-            <Tooltip className="tooltip">{tooltip}</Tooltip>
+            {showTooltip && typeof document !== 'undefined' && createPortal(
+                <Tooltip
+                    style={{
+                        transform: 'translateY(-50%)',
+                        top: position.top,
+                        left: position.left - 200,
+                        opacity: 1
+                    }}
+                >
+                    {tooltip}
+                </Tooltip>,
+                document.body
+            )}
         </TooltipContainer>
-    )
+    );
 }
 
 interface ColorLegendProps {
@@ -509,14 +551,14 @@ export default function LogisticBifurcation() {
                 }}
             >
                 <MapControls 
-                    maxZoom={50}
+                    maxZoom={200}
                     minZoom={0.5}
                     enableRotate={false}
                 />
                 <PointCloud points={points} />
             </Canvas>
             
-            <div className="controls-overlay">
+            <div className="controls-overlay" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
                 <BackButton onClick={() => window.location.href = '/'}>
                     ← Back
                 </BackButton>
@@ -528,7 +570,7 @@ export default function LogisticBifurcation() {
                     />
                 )}
 
-                <ControlPanel>
+                <ControlPanel style={{ pointerEvents: 'auto' }}>
                     <Button onClick={handleReset}>
                         Reset to Default
                     </Button>
