@@ -10,7 +10,7 @@ const CanvasContainer = styled.div`
     height: 100vh;
     height: 100dvh;
     width: 100vw;
-    background: white;
+    background: #121212;
     position: relative;
     overflow: hidden;
 `
@@ -19,7 +19,7 @@ const ControlPanel = styled.div`
     position: absolute;
     top: clamp(60px, 10vh, 105px);
     right: clamp(10px, 3vw, 20px);
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(30, 30, 30, 0.9);
     padding: clamp(12px, 3vw, 20px);
     border-radius: 8px;
     display: flex;
@@ -29,6 +29,7 @@ const ControlPanel = styled.div`
     max-height: 90vh;
     overflow-y: auto;
     backdrop-filter: blur(5px);
+    color: white;
 
     @media (max-width: 768px) {
         top: auto;
@@ -42,10 +43,15 @@ const ControlPanel = styled.div`
         width: 100%;
         padding: 4px 8px;
         font-size: clamp(12px, 2vw, 14px);
+        background: rgba(45, 45, 45, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        border-radius: 4px;
     }
 
     label {
         font-size: clamp(12px, 2vw, 14px);
+        color: white;
     }
 `
 
@@ -100,13 +106,14 @@ const LoadingOverlay = styled.div`
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(30, 30, 30, 0.9);
     padding: clamp(12px, 3vw, 20px);
     border-radius: 8px;
     font-size: clamp(14px, 2.5vw, 18px);
     text-align: center;
     backdrop-filter: blur(5px);
     white-space: nowrap;
+    color: white;
 `
 
 const Crosshair = styled.div<{ x: number; y: number }>`
@@ -187,12 +194,12 @@ const BackButton = styled(Button)`
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(30, 30, 30, 0.9);
     color: #4a90e2;
     backdrop-filter: blur(5px);
     
     &:hover {
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(45, 45, 45, 0.95);
     }
 `
 
@@ -200,7 +207,7 @@ const LegendContainer = styled.div`
     position: absolute;
     top: clamp(10px, 3vh, 20px);
     right: clamp(10px, 3vw, 20px);
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(30, 30, 30, 0.9);
     padding: clamp(10px, 2vw, 15px);
     border-radius: 8px;
     display: flex;
@@ -210,6 +217,7 @@ const LegendContainer = styled.div`
     margin-bottom: clamp(5px, 2vw, 10px);
     backdrop-filter: blur(5px);
     width: clamp(200px, 90vw, 300px);
+    color: white;
 
     @media (max-width: 768px) {
         top: clamp(10px, 3vh, 20px);
