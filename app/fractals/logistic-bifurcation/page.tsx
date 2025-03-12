@@ -8,22 +8,45 @@ import styled from 'styled-components'
 
 const CanvasContainer = styled.div`
     height: 100vh;
+    height: 100dvh;
     width: 100vw;
     background: white;
     position: relative;
+    overflow: hidden;
 `
 
 const ControlPanel = styled.div`
     position: absolute;
-    top: 105px;
-    right: 20px;
+    top: clamp(60px, 10vh, 105px);
+    right: clamp(10px, 3vw, 20px);
     background: rgba(255, 255, 255, 0.9);
-    padding: 20px;
+    padding: clamp(12px, 3vw, 20px);
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-width: 300px;
+    gap: clamp(6px, 2vw, 10px);
+    width: clamp(200px, 90vw, 300px);
+    max-height: 90vh;
+    overflow-y: auto;
+    backdrop-filter: blur(5px);
+
+    @media (max-width: 768px) {
+        top: auto;
+        bottom: clamp(10px, 3vh, 20px);
+        right: 50%;
+        transform: translateX(50%);
+        max-height: 60vh;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 4px 8px;
+        font-size: clamp(12px, 2vw, 14px);
+    }
+
+    label {
+        font-size: clamp(12px, 2vw, 14px);
+    }
 `
 
 const TooltipContainer = styled.div`
@@ -34,6 +57,12 @@ const TooltipContainer = styled.div`
     &:hover .tooltip {
         visibility: visible;
         opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+        &:hover .tooltip {
+            display: none;
+        }
     }
 `
 
@@ -49,7 +78,7 @@ const Tooltip = styled.div`
     color: white;
     border-radius: 4px;
     width: 200px;
-    font-size: 12px;
+    font-size: clamp(10px, 1.5vw, 12px);
     opacity: 0;
     transition: opacity 0.2s;
     text-align: left;
@@ -72,9 +101,12 @@ const LoadingOverlay = styled.div`
     left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(255, 255, 255, 0.9);
-    padding: 20px;
+    padding: clamp(12px, 3vw, 20px);
     border-radius: 8px;
-    font-size: 18px;
+    font-size: clamp(14px, 2.5vw, 18px);
+    text-align: center;
+    backdrop-filter: blur(5px);
+    white-space: nowrap;
 `
 
 const Crosshair = styled.div<{ x: number; y: number }>`
@@ -103,6 +135,18 @@ const Crosshair = styled.div<{ x: number; y: number }>`
         width: 1px;
         left: 0;
     }
+
+    @media (max-width: 768px) {
+        &::before {
+            left: -5px;
+            right: -5px;
+        }
+
+        &::after {
+            top: -5px;
+            bottom: -5px;
+        }
+    }
 `
 
 const CoordinateTooltip = styled.div<{ x: number; y: number }>`
@@ -113,20 +157,22 @@ const CoordinateTooltip = styled.div<{ x: number; y: number }>`
     color: white;
     padding: 4px 8px;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: clamp(10px, 1.5vw, 12px);
     pointer-events: none;
     z-index: 10;
     white-space: nowrap;
+    backdrop-filter: blur(5px);
 `
 
 const Button = styled.button`
-    padding: 8px 16px;
+    padding: clamp(6px, 2vw, 8px) clamp(12px, 3vw, 16px);
     background: #4a90e2;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: clamp(12px, 2vw, 14px);
+    width: 100%;
     
     &:hover {
         background: #357abd;
@@ -135,21 +181,29 @@ const Button = styled.button`
 
 const LegendContainer = styled.div`
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: clamp(10px, 3vh, 20px);
+    right: clamp(10px, 3vw, 20px);
     background: rgba(255, 255, 255, 0.9);
-    padding: 15px;
+    padding: clamp(10px, 2vw, 15px);
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    font-size: 12px;
-    margin-bottom: 10px;
+    gap: clamp(3px, 1vw, 5px);
+    font-size: clamp(10px, 1.5vw, 12px);
+    margin-bottom: clamp(5px, 2vw, 10px);
+    backdrop-filter: blur(5px);
+    width: clamp(200px, 90vw, 300px);
+
+    @media (max-width: 768px) {
+        top: clamp(10px, 3vh, 20px);
+        right: 50%;
+        transform: translateX(50%);
+    }
 `
 
 const LegendGradient = styled.div`
-    width: 200px;
-    height: 20px;
+    width: 100%;
+    height: clamp(15px, 3vw, 20px);
     border-radius: 4px;
     position: relative;
 `
@@ -157,7 +211,8 @@ const LegendGradient = styled.div`
 const LegendLabels = styled.div`
     display: flex;
     justify-content: space-between;
-    margin-top: 5px;
+    margin-top: clamp(3px, 1vw, 5px);
+    font-size: clamp(10px, 1.5vw, 12px);
 `
 
 interface Point {
@@ -176,8 +231,8 @@ interface FractalParams {
 }
 
 const defaultParams: FractalParams = {
-    startR: 1.1,
-    endR: 4.0,
+    startR: 1.1,  // Wider range to show more context
+    endR: 4.0,    // Show up to the full range
     resolution: 'low',
     accuracyValue: 0.001,
     maxIterations: 100,
@@ -423,28 +478,19 @@ export default function LogisticBifurcation() {
                 orthographic
                 camera={{ 
                     position: [0, 0, 500],
-                    zoom: 2,
+                    zoom: 1.5,
                     up: [0, 0, 1], 
                     far: 10000 
                 }}
             >
                 <MapControls 
                     maxZoom={50}
-                    minZoom={1}
+                    minZoom={0.5}
                     enableRotate={false}
                 />
                 <PointCloud points={points} />
             </Canvas>
             
-            {mousePos && (
-                <>
-                    <Crosshair x={mousePos.x} y={mousePos.y} />
-                    <CoordinateTooltip x={mousePos.x} y={mousePos.y}>
-                        r: {mousePos.r.toFixed(3)}, x: {mousePos.value.toFixed(3)}
-                    </CoordinateTooltip>
-                </>
-            )}
-
             <div className="controls-overlay">
                 {!loading && iterationBounds && (
                     <ColorLegend 
@@ -534,6 +580,15 @@ export default function LogisticBifurcation() {
                 <LoadingOverlay>
                     Calculating bifurcation diagram... {Math.round(progress * 100)}%
                 </LoadingOverlay>
+            )}
+
+            {mousePos && (
+                <>
+                    <Crosshair x={mousePos.x} y={mousePos.y} />
+                    <CoordinateTooltip x={mousePos.x} y={mousePos.y}>
+                        r: {mousePos.r.toFixed(3)}, x: {mousePos.value.toFixed(3)}
+                    </CoordinateTooltip>
+                </>
             )}
         </CanvasContainer>
     )

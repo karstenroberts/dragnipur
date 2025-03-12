@@ -8,6 +8,7 @@ const nextConfig = {
     experimental: {
         typedRoutes: true,
     },
+    output: 'standalone',
 }
 
 module.exports = nextConfig

@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import styles from '../styles/Home.module.css'
 
@@ -7,58 +6,31 @@ export default function Home() {
     <div className={styles.container}>
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Read{' '}
-          <Link href="/posts/first-post">this page!</Link>
-          Learn <a href="https://nextjs.org">Next.js!</a>
+          Welcome to Dragnipur
         </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-
         <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
+          <Link href="/fractals/logistic-bifurcation" className={styles.card}>
+            <h2>Logistic Bifurcation &rarr;</h2>
             <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
+              Interactive visualization of the logistic map's bifurcation diagram,
+              exploring chaos and complex systems.
             </p>
-          </a>
+          </Link>
+
+          <Link href="/playground/react-three-fiber" className={styles.card}>
+            <h2>Three.js Playground &rarr;</h2>
+            <p>
+              Experiments with 3D graphics and interactive visualizations using
+              React Three Fiber.
+            </p>
+          </Link>
         </div>
       </main>
 
       <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
+        <p>
+          Built with Next.js and Three.js | Forged in Chaos
+        </p>
       </footer>
     </div>
   )

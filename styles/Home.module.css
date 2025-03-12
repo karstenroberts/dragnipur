@@ -1,24 +1,42 @@
 .container {
-  padding: 0 2rem;
+  padding: clamp(1rem, 5vw, 2rem);
+  position: relative;
+  min-height: 100vh;
+  background-color: #000;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.12; }
 }
 
 .main {
   min-height: 100vh;
-  padding: 4rem 0;
+  padding: clamp(2rem, 8vh, 4rem) 0;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .footer {
-  display: flex;
-  flex: 1;
-  padding: 2rem 0;
-  border-top: 1px solid #eaeaea;
-  justify-content: center;
-  align-items: center;
+  width: 100%;
+  padding: clamp(1rem, 4vh, 2rem) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  position: relative;
+  z-index: 3;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: clamp(0.875rem, 2vw, 1rem);
 }
 
 .footer a {
@@ -42,18 +60,22 @@
 .title {
   margin: 0;
   line-height: 1.15;
-  font-size: 4rem;
-}
-
-.title,
-.description {
+  font-size: clamp(2rem, 8vw, 4rem);
+  color: #4287f5;
+  text-shadow: 0 0 10px rgba(66, 135, 245, 0.5);
+  margin-bottom: clamp(1rem, 4vh, 2rem);
   text-align: center;
+  width: 100%;
 }
 
 .description {
-  margin: 4rem 0;
+  margin: clamp(2rem, 6vh, 4rem) 0;
   line-height: 1.5;
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  max-width: 800px;
+  padding: 0 1rem;
 }
 
 .code {
@@ -67,39 +89,47 @@
 
 .grid {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   flex-wrap: wrap;
+  width: 100%;
   max-width: 800px;
+  gap: clamp(1rem, 4vw, 2rem);
+  padding: 0 1rem;
 }
 
 .card {
-  margin: 1rem;
-  padding: 1.5rem;
+  flex: 1 1 300px;
+  min-width: min(100%, 300px);
+  margin: 0;
+  padding: clamp(1rem, 4vw, 1.5rem);
   text-align: left;
-  color: inherit;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
-  border: 1px solid #eaeaea;
-  border-radius: 10px;
-  transition: color 0.15s ease, border-color 0.15s ease;
-  max-width: 300px;
+  border: 1px solid #4287f5;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .card:hover,
 .card:focus,
 .card:active {
-  color: #0070f3;
-  border-color: #0070f3;
+  color: #ffffff;
+  border-color: #4287f5;
+  box-shadow: 0 0 10px rgba(66, 135, 245, 0.3);
+  transform: translateY(-2px);
 }
 
 .card h2 {
   margin: 0 0 1rem 0;
-  font-size: 1.5rem;
+  font-size: clamp(1.25rem, 4vw, 1.5rem);
+  color: #4287f5;
 }
 
 .card p {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: clamp(1rem, 3vw, 1.25rem);
   line-height: 1.5;
 }
 
@@ -110,7 +140,28 @@
 
 @media (max-width: 600px) {
   .grid {
-    width: 100%;
     flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .card {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .description {
+    margin: 2rem 0;
+  }
+}
+
+@media (prefers-reduced-motion) {
+  .container::before {
+    animation: none;
   }
 }
