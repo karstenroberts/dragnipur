@@ -179,6 +179,23 @@ const Button = styled.button`
     }
 `
 
+const BackButton = styled(Button)`
+    position: absolute;
+    top: clamp(10px, 3vh, 20px);
+    left: clamp(10px, 3vw, 20px);
+    width: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #4a90e2;
+    backdrop-filter: blur(5px);
+    
+    &:hover {
+        background: rgba(255, 255, 255, 0.95);
+    }
+`
+
 const LegendContainer = styled.div`
     position: absolute;
     top: clamp(10px, 3vh, 20px);
@@ -492,6 +509,10 @@ export default function LogisticBifurcation() {
             </Canvas>
             
             <div className="controls-overlay">
+                <BackButton onClick={() => window.location.href = '/'}>
+                    ← Back
+                </BackButton>
+
                 {!loading && iterationBounds && (
                     <ColorLegend 
                         minIterations={iterationBounds.min}
