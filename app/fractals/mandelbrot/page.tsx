@@ -40,7 +40,7 @@ const ControlPanel = styled.div`
     overflow-y: auto;
     backdrop-filter: blur(5px);
     color: white;
-    z-index: 1000;
+    z-index: 100;
     pointer-events: auto;
 
     @media (max-width: 768px) {
@@ -65,6 +65,105 @@ const ControlPanel = styled.div`
         font-size: clamp(12px, 2vw, 14px);
         color: white;
     }
+`
+
+const TooltipContainer = styled.div`
+    position: relative;
+    display: inline-block;
+    width: 100%;
+`
+
+const Tooltip = styled.div`
+    position: fixed;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 4px;
+    width: 200px;
+    font-size: clamp(10px, 1.5vw, 12px);
+    text-align: left;
+    pointer-events: none;
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        transform: translateY(-50%);
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent transparent rgba(0, 0, 0, 0.8);
+    }
+`
+
+const LoadingOverlay = styled.div`
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(30, 30, 30, 0.9);
+    padding: clamp(12px, 3vw, 20px);
+    border-radius: 8px;
+    font-size: clamp(14px, 2.5vw, 18px);
+    text-align: center;
+    backdrop-filter: blur(5px);
+    white-space: nowrap;
+    color: white;
+`
+
+const Crosshair = styled.div<{ x: number; y: number }>`
+    position: absolute;
+    left: ${props => props.x}px;
+    top: ${props => props.y}px;
+    pointer-events: none;
+    z-index: 10;
+
+    &::before, &::after {
+        content: '';
+        position: absolute;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    &::before {
+        left: -10px;
+        right: -10px;
+        height: 1px;
+        top: 0;
+    }
+
+    &::after {
+        top: -10px;
+        bottom: -10px;
+        width: 1px;
+        left: 0;
+    }
+
+    @media (max-width: 768px) {
+        &::before {
+            left: -5px;
+            right: -5px;
+        }
+
+        &::after {
+            top: -5px;
+            bottom: -5px;
+        }
+    }
+`
+
+const CoordinateTooltip = styled.div<{ x: number; y: number }>`
+    position: absolute;
+    left: ${props => props.x + 15}px;
+    top: ${props => props.y + 15}px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: clamp(10px, 1.5vw, 12px);
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
+    backdrop-filter: blur(5px);
 `
 
 const Button = styled.button`
@@ -100,141 +199,150 @@ const BackButton = styled(Button)`
     }
 `
 
-const LoadingOverlay = styled.div`
+const LegendContainer = styled.div`
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: clamp(10px, 3vh, 20px);
+    right: clamp(10px, 3vw, 20px);
     background: rgba(30, 30, 30, 0.9);
-    padding: clamp(12px, 3vw, 20px);
+    padding: clamp(10px, 2vw, 15px);
     border-radius: 8px;
-    font-size: clamp(14px, 2.5vw, 18px);
-    text-align: center;
-    backdrop-filter: blur(5px);
-    white-space: nowrap;
-    color: white;
-    z-index: 1000;
-`
-
-const CoordinateTooltip = styled.div<{ x: number; y: number }>`
-    position: absolute;
-    left: ${props => props.x + 15}px;
-    top: ${props => props.y + 15}px;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3px, 1vw, 5px);
     font-size: clamp(10px, 1.5vw, 12px);
-    pointer-events: none;
-    z-index: 1000;
-    white-space: nowrap;
+    margin-bottom: clamp(5px, 2vw, 10px);
     backdrop-filter: blur(5px);
-`
-
-const TooltipContainer = styled.div`
-    position: relative;
-    display: inline-block;
-    width: 100%;
-`
-
-const Tooltip = styled.div`
-    position: fixed;
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.8);
+    width: clamp(200px, 90vw, 300px);
     color: white;
-    border-radius: 4px;
-    width: 200px;
-    font-size: clamp(10px, 1.5vw, 12px);
-    text-align: left;
-    pointer-events: none;
-    z-index: 10000;
+    pointer-events: auto;
 
-    &::after {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 100%;
-        transform: translateY(-50%);
-        border-width: 5px;
-        border-style: solid;
-        border-color: transparent transparent transparent rgba(0, 0, 0, 0.8);
+    @media (max-width: 768px) {
+        top: clamp(10px, 3vh, 20px);
+        right: 50%;
+        transform: translateX(50%);
     }
 `
 
-const SelectionBox = styled.div<{ start: { x: number; y: number }, current: { x: number; y: number }, complexSize: number, rect: DOMRect }>`
+const LegendGradient = styled.div`
+    width: 100%;
+    height: clamp(15px, 3vw, 20px);
+    border-radius: 4px;
+    position: relative;
+`
+
+const LegendLabels = styled.div`
+    display: flex;
+    justify-content: space-between;
+    margin-top: clamp(3px, 1vw, 5px);
+    font-size: clamp(10px, 1.5vw, 12px);
+`
+
+const SelectionRect = styled.div<{ x: number; y: number; width: number; height: number }>`
     position: absolute;
+    left: ${props => props.x}px;
+    top: ${props => props.y}px;
+    width: ${props => props.width}px;
+    height: ${props => props.height}px;
     border: 2px solid #4a90e2;
     background: rgba(74, 144, 226, 0.1);
     pointer-events: none;
-    ${props => {
-        // Calculate the pixel size based on the complex size and viewport
-        const pixelSize = (props.complexSize / 3) * props.rect.width;
-        const left = props.start.x;
-        const top = props.start.y;
-        
-        return `
-            left: ${left}px;
-            top: ${top}px;
-            width: ${pixelSize}px;
-            height: ${pixelSize}px;
-        `;
-    }}
-    z-index: 1000;
+    z-index: 20;
 `
 
-interface MandelbrotParams {
-    maxIterations: number;
-    resolution: 'low' | 'medium' | 'high' | 'custom';
-    customResolution?: number;
-    colorScheme: 'classic' | 'smooth' | 'psychedelic';
-    escapeRadius: number;
-    zoomRegion?: {
-        centerX: number;
-        centerY: number;
-        width: number;
-        height: number;
-    };
+interface Point {
+    x: number
+    y: number
+    iterations: number
 }
 
-const defaultParams: MandelbrotParams = {
-    maxIterations: 1000,
+interface FractalParams {
+    centerX: number
+    centerY: number
+    zoom: number
+    resolution: 'low' | 'medium' | 'high'
+    maxIterations: number
+    escapeRadius: number
+}
+
+const defaultParams: FractalParams = {
+    centerX: -0.5,  // Center of Mandelbrot set
+    centerY: 0,
+    zoom: 1,        // Start with full view
     resolution: 'low',
-    customResolution: 2048,
-    colorScheme: 'classic',
-    escapeRadius: 2.0
+    maxIterations: 100,
+    escapeRadius: 10
 }
 
-function MandelbrotSet({ imageData }: { imageData: ImageData | null }) {
-    const meshRef = useRef<THREE.Mesh>(null)
-    const textureRef = useRef<THREE.Texture | null>(null)
+function PointCloud({ points }: { points: Point[] }) {
+    const instancedMeshRef = useRef<THREE.InstancedMesh>(null)
+    const tempObject = useRef(new THREE.Object3D())
+    const tempColor = useRef(new THREE.Color())
 
     useEffect(() => {
-        if (!imageData || !meshRef.current) return
+        if (!instancedMeshRef.current || !points.length) return
 
-        if (textureRef.current) {
-            textureRef.current.dispose()
-        }
+        // Find max iterations for color normalization
+        const maxIterations = points.reduce((max, point) => 
+            point.iterations > max ? point.iterations : max, 0)
+        const minIterations = points.reduce((min, point) => 
+            point.iterations < min ? point.iterations : min, maxIterations)
 
-        const texture = new THREE.DataTexture(
-            imageData.data,
-            imageData.width,
-            imageData.height,
-            THREE.RGBAFormat
-        )
-        texture.needsUpdate = true
-        textureRef.current = texture
+        // Calculate logarithmic scale parameters
+        const logMin = Math.log(minIterations || 1)
+        const logMax = Math.log(maxIterations)
+        const logRange = logMax - logMin
 
-        if (meshRef.current.material instanceof THREE.MeshBasicMaterial) {
-            meshRef.current.material.map = texture
-            meshRef.current.material.needsUpdate = true
-        }
-    }, [imageData])
+        points.forEach((point, i) => {
+            // Center the points and scale them
+            const x = (point.x - 0.5) * 400
+            const y = (point.y - 0.5) * 400
+            
+            tempObject.current.position.set(x, y, 0)
+            tempObject.current.scale.set(0.3, 0.3, 1)
+            tempObject.current.updateMatrix()
+            
+            instancedMeshRef.current?.setMatrixAt(i, tempObject.current.matrix)
+
+            // Classic Mandelbrot coloring
+            const logValue = Math.log(point.iterations)
+            const normalizedValue = (logValue - logMin) / logRange
+
+            // Classic color palette: black -> blue -> white
+            if (point.iterations === maxIterations) {
+                // Points in the set are black
+                tempColor.current.setRGB(0, 0, 0)
+            } else {
+                // Smooth coloring for escape points
+                const t = normalizedValue
+                if (t < 0.5) {
+                    // Transition from black to blue
+                    const blue = t * 2
+                    tempColor.current.setRGB(0, 0, blue)
+                } else {
+                    // Transition from blue to white
+                    const t2 = (t - 0.5) * 2
+                    tempColor.current.setRGB(t2, t2, 1)
+                }
+            }
+
+            instancedMeshRef.current?.setColorAt(i, tempColor.current)
+        })
+
+        instancedMeshRef.current.instanceMatrix.needsUpdate = true
+        if (instancedMeshRef.current.instanceColor) 
+            instancedMeshRef.current.instanceColor.needsUpdate = true
+    }, [points])
+
+    if (!points.length) return null
 
     return (
-        <mesh ref={meshRef}>
-            <planeGeometry args={[3, 3]} />
+        <instancedMesh
+            ref={instancedMeshRef}
+            args={[undefined, undefined, points.length]}
+        >
+            <planeGeometry args={[0.5, 0.5]} />
             <meshBasicMaterial />
-        </mesh>
+        </instancedMesh>
     )
 }
 
@@ -284,8 +392,7 @@ function ControlWithTooltip({ label, tooltip, children }: { label: string, toolt
                         transform: 'translateY(-50%)',
                         top: position.top,
                         left: position.left - 200,
-                        opacity: 1,
-                        zIndex: 10000
+                        opacity: 1
                     }}
                 >
                     {tooltip}
@@ -296,216 +403,246 @@ function ControlWithTooltip({ label, tooltip, children }: { label: string, toolt
     );
 }
 
+interface ColorLegendProps {
+    minIterations: number;
+    maxIterations: number;
+}
+
+function ColorLegend({ minIterations, maxIterations }: ColorLegendProps) {
+    // Generate the classic color gradient
+    const stops = Array.from({ length: 10 }, (_, i) => {
+        const t = i / 9  // 0 to 1
+        let color
+        if (t < 0.5) {
+            // Transition from black to blue
+            const blue = t * 2
+            color = `rgb(0, 0, ${Math.round(blue * 255)})`
+        } else {
+            // Transition from blue to white
+            const t2 = (t - 0.5) * 2
+            const value = Math.round(t2 * 255)
+            color = `rgb(${value}, ${value}, 255)`
+        }
+        return `${color} ${i * 11.11}%`
+    }).join(', ')
+
+    return (
+        <LegendContainer>
+            <div>Iteration Depth</div>
+            <LegendGradient
+                style={{
+                    background: `linear-gradient(to right, ${stops})`
+                }}
+            />
+            <LegendLabels>
+                <span>{minIterations}</span>
+                <span>{Math.round((maxIterations + minIterations) / 2)}</span>
+                <span>{maxIterations}</span>
+            </LegendLabels>
+        </LegendContainer>
+    )
+}
+
+interface Selection {
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+}
+
 export default function Mandelbrot() {
-    const [params, setParams] = useState<MandelbrotParams>(defaultParams)
+    const [points, setPoints] = useState<Point[]>([])
     const [loading, setLoading] = useState(true)
     const [progress, setProgress] = useState(0)
-    const [imageData, setImageData] = useState<ImageData | null>(null)
+    const [params, setParams] = useState<FractalParams>(defaultParams)
     const [mousePos, setMousePos] = useState<{ x: number; y: number; real: number; imag: number } | null>(null)
+    const [selection, setSelection] = useState<Selection | null>(null)
     const workerRef = useRef<Worker>()
     const canvasContainerRef = useRef<HTMLDivElement>(null)
-    const [camera, setCamera] = useState<THREE.OrthographicCamera | null>(null)
-    const [selecting, setSelecting] = useState(false);
-    const [selectionStart, setSelectionStart] = useState<{ x: number; y: number } | null>(null);
-    const [selectionCurrent, setSelectionCurrent] = useState<{ x: number; y: number; complexSize: number; rect: DOMRect } | null>(null);
-    const [selectedRegion, setSelectedRegion] = useState<MandelbrotParams['zoomRegion'] | null>(null);
+    const [iterationBounds, setIterationBounds] = useState<{ min: number; max: number } | null>(null)
 
-    const handleReset = useCallback(() => {
-        // Reset parameters
-        setParams(defaultParams);
-        // Reset selection state
-        setSelectedRegion(null);
-
-        // Calculate optimal zoom to fit the set
-        if (canvasContainerRef.current && camera) {
-            const rect = canvasContainerRef.current.getBoundingClientRect();
-            const viewportAspectRatio = rect.width / rect.height;
-            
-            // Increase the view area by extending the dimensions
-            const setWidth = 4;    // Wider view (-2.5 to 1.5)
-            const setHeight = 4;   // Taller view (-2 to 2)
-            const setAspectRatio = setWidth / setHeight;
-
-            // Calculate zoom based on which dimension is limiting
-            const zoom = viewportAspectRatio > setAspectRatio
-                ? rect.height / setHeight  // height limited
-                : rect.width / setWidth;   // width limited
-
-            camera.zoom = zoom;
-            camera.position.set(0, 0, 1);
-            camera.updateProjectionMatrix();
-        }
-    }, [camera]);
-
-    // Effect to handle initial zoom
-    useEffect(() => {
-        if (camera && canvasContainerRef.current) {
-            handleReset();
-        }
-    }, [camera, handleReset]);
-
+    // Convert screen coordinates to complex plane coordinates
     const screenToComplexCoords = useCallback((x: number, y: number) => {
-        if (!canvasContainerRef.current || !camera) return null;
+        if (!canvasContainerRef.current) return null
 
-        const rect = canvasContainerRef.current.getBoundingClientRect();
-        
-        // Convert screen coordinates to normalized device coordinates (-1 to 1)
-        const ndcX = ((x - rect.left) / rect.width) * 2 - 1;
-        const ndcY = -((y - rect.top) / rect.height) * 2 + 1;
+        const rect = canvasContainerRef.current.getBoundingClientRect()
+        const relativeX = x - rect.left
+        const relativeY = y - rect.top
 
-        // Account for camera zoom and position
-        const zoom = camera.zoom;
-        const cameraX = camera.position.x;
-        const cameraY = camera.position.y;
+        // Convert to normalized coordinates (-1 to 1)
+        const normalizedX = (relativeX / rect.width) * 2 - 1
+        const normalizedY = -((relativeY / rect.height) * 2 - 1)  // Flip Y axis
 
         // Convert to complex plane coordinates
-        // The view spans from -2 to 1 on x-axis and -1.5 to 1.5 on y-axis
-        const viewWidth = 3; // Total width of view (-2 to 1 = 3 units)
-        const viewHeight = 3; // Total height of view (-1.5 to 1.5 = 3 units)
-        
-        const real = -2 + (ndcX + 1) * viewWidth / 2 - (cameraX * viewWidth / 3);
-        const imag = (ndcY * viewHeight / 2) - (cameraY * viewHeight / 3);
+        const scale = 4 / params.zoom  // 4 is the width of the Mandelbrot set
+        const real = params.centerX + normalizedX * (scale / 2)
+        const imag = params.centerY + normalizedY * (scale / 2)
 
-        return { real, imag };
-    }, [camera]);
+        return { real, imag }
+    }, [params.centerX, params.centerY, params.zoom])
 
-    const handleContextMenu = useCallback((e: MouseEvent) => {
-        // Prevent context menu from appearing during selection
-        e.preventDefault();
-    }, []);
+    // Convert complex plane coordinates to screen coordinates
+    const complexToScreenCoords = useCallback((real: number, imag: number) => {
+        if (!canvasContainerRef.current) return null
+
+        const rect = canvasContainerRef.current.getBoundingClientRect()
+        const scale = 4 / params.zoom
+
+        // Convert from complex plane to normalized coordinates
+        const normalizedX = (real - params.centerX) / (scale / 2)
+        const normalizedY = -(imag - params.centerY) / (scale / 2)
+
+        // Convert to screen coordinates
+        const x = ((normalizedX + 1) / 2) * rect.width
+        const y = ((normalizedY + 1) / 2) * rect.height
+
+        return { x, y }
+    }, [params.centerX, params.centerY, params.zoom])
 
     const handleMouseDown = useCallback((e: MouseEvent) => {
-        // Only handle right mouse button (button === 2)
-        if (e.button !== 2) return;
-        
-        const target = e.target as HTMLElement;
-        if (target.closest('.controls-overlay') !== null) return;
+        if (!canvasContainerRef.current) return
 
-        const coords = screenToComplexCoords(e.clientX, e.clientY);
-        if (coords) {
-            setSelecting(true);
-            setSelectionStart({ x: e.clientX, y: e.clientY });
-            setSelectionCurrent({ x: e.clientX, y: e.clientY, complexSize: 0, rect: new DOMRect() });
-            setSelectedRegion(null);
-        }
-    }, [screenToComplexCoords]);
+        // Check if mouse is over any control elements
+        const target = e.target as HTMLElement
+        const isOverControls = target.closest('.controls-overlay') !== null
+
+        if (isOverControls) return
+
+        const rect = canvasContainerRef.current.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+
+        setSelection({ startX: x, startY: y, currentX: x, currentY: y })
+    }, [])
 
     const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (!canvasContainerRef.current) return;
+        if (!canvasContainerRef.current) return
 
-        const target = e.target as HTMLElement;
-        const isOverControls = target.closest('.controls-overlay') !== null;
+        // Check if mouse is over any control elements
+        const target = e.target as HTMLElement
+        const isOverControls = target.closest('.controls-overlay') !== null
 
         if (isOverControls) {
-            setMousePos(null);
-            return;
+            setMousePos(null)
+            return
         }
 
-        const coords = screenToComplexCoords(e.clientX, e.clientY);
+        const coords = screenToComplexCoords(e.clientX, e.clientY)
         if (coords) {
             setMousePos({
                 x: e.clientX,
                 y: e.clientY,
-                ...coords
-            });
-
-            if (selecting && selectionStart) {
-                const startCoords = screenToComplexCoords(selectionStart.x, selectionStart.y);
-                if (startCoords) {
-                    // Calculate size in complex coordinates
-                    const width = Math.abs(coords.real - startCoords.real);
-                    const height = Math.abs(coords.imag - startCoords.imag);
-                    const complexSize = Math.max(width, height);
-
-                    setSelectionCurrent({
-                        x: e.clientX,
-                        y: e.clientY,
-                        complexSize,
-                        rect: canvasContainerRef.current.getBoundingClientRect()
-                    });
-                }
-            }
+                real: coords.real,
+                imag: coords.imag
+            })
         }
-    }, [screenToComplexCoords, selecting, selectionStart]);
+
+        // Update selection if active
+        if (selection) {
+            const rect = canvasContainerRef.current.getBoundingClientRect()
+            const x = e.clientX - rect.left
+            const y = e.clientY - rect.top
+            setSelection(prev => prev ? { ...prev, currentX: x, currentY: y } : null)
+        }
+    }, [screenToComplexCoords, selection])
 
     const handleMouseUp = useCallback((e: MouseEvent) => {
-        // Only handle right mouse button (button === 2)
-        if (e.button !== 2) return;
+        if (!selection || !canvasContainerRef.current) return
 
-        if (selecting && selectionStart && selectionCurrent) {
-            const startCoords = screenToComplexCoords(selectionStart.x, selectionStart.y);
-            const endCoords = screenToComplexCoords(e.clientX, e.clientY);
+        const rect = canvasContainerRef.current.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+
+        // Calculate selection dimensions
+        const width = Math.abs(x - selection.startX)
+        const height = Math.abs(y - selection.startY)
+
+        // Only zoom if selection is large enough (at least 10x10 pixels)
+        if (width > 10 && height > 10) {
+            // Convert selection corners to complex coordinates
+            const startCoords = screenToComplexCoords(
+                selection.startX + rect.left,
+                selection.startY + rect.top
+            )
+            const endCoords = screenToComplexCoords(x + rect.left, y + rect.top)
 
             if (startCoords && endCoords) {
-                // Calculate the width and height in complex coordinates
-                const width = Math.abs(endCoords.real - startCoords.real);
-                const height = Math.abs(endCoords.imag - startCoords.imag);
-                const size = Math.max(width, height);
+                // Calculate new center and zoom
+                const newCenterX = (startCoords.real + endCoords.real) / 2
+                const newCenterY = (startCoords.imag + endCoords.imag) / 2
+                const newZoom = params.zoom * (rect.width / width)
 
-                // Determine the direction of selection to adjust the square accordingly
-                const isRightward = endCoords.real >= startCoords.real;
-                const isDownward = endCoords.imag >= startCoords.imag;
-
-                // Calculate the corners of the square
-                const minX = isRightward ? startCoords.real : startCoords.real - size;
-                const maxX = isRightward ? startCoords.real + size : startCoords.real;
-                const minY = isDownward ? startCoords.imag : startCoords.imag - size;
-                const maxY = isDownward ? startCoords.imag + size : startCoords.imag;
-
-                setSelectedRegion({
-                    centerX: (minX + maxX) / 2,
-                    centerY: (minY + maxY) / 2,
-                    width: size,
-                    height: size
-                });
+                // Update parameters
+                setParams(prev => ({
+                    ...prev,
+                    centerX: newCenterX,
+                    centerY: newCenterY,
+                    zoom: newZoom,
+                    resolution: 'high'  // Automatically switch to high resolution for zoomed view
+                }))
             }
         }
-        setSelecting(false);
-    }, [selecting, selectionStart, selectionCurrent, screenToComplexCoords]);
+
+        setSelection(null)
+    }, [selection, screenToComplexCoords, params.zoom])
+
+    const handleMouseLeave = useCallback(() => {
+        setMousePos(null)
+        setSelection(null)
+    }, [])
 
     useEffect(() => {
-        const container = canvasContainerRef.current;
-        if (!container) return;
+        const container = canvasContainerRef.current
+        if (!container) return
 
-        container.addEventListener('contextmenu', handleContextMenu);
-        container.addEventListener('mousedown', handleMouseDown);
-        container.addEventListener('mousemove', handleMouseMove);
-        container.addEventListener('mouseup', handleMouseUp);
+        container.addEventListener('mousedown', handleMouseDown)
+        container.addEventListener('mousemove', handleMouseMove)
+        container.addEventListener('mouseup', handleMouseUp)
+        container.addEventListener('mouseleave', handleMouseLeave)
+
         return () => {
-            container.removeEventListener('contextmenu', handleContextMenu);
-            container.removeEventListener('mousedown', handleMouseDown);
-            container.removeEventListener('mousemove', handleMouseMove);
-            container.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [handleContextMenu, handleMouseDown, handleMouseMove, handleMouseUp]);
+            container.removeEventListener('mousedown', handleMouseDown)
+            container.removeEventListener('mousemove', handleMouseMove)
+            container.removeEventListener('mouseup', handleMouseUp)
+            container.removeEventListener('mouseleave', handleMouseLeave)
+        }
+    }, [handleMouseDown, handleMouseMove, handleMouseUp, handleMouseLeave])
 
-    const calculateSet = useCallback((newParams: MandelbrotParams) => {
+    const calculatePoints = useCallback((newParams: FractalParams) => {
         setLoading(true)
         setProgress(0)
-        setImageData(null)
+        setPoints([])
+        setIterationBounds(null)
 
+        // Terminate existing worker if it exists
         if (workerRef.current) {
             workerRef.current.terminate()
         }
 
+        // Create new worker
         workerRef.current = new Worker(new URL('./worker.ts', import.meta.url))
         
         workerRef.current.onmessage = (e: MessageEvent) => {
             if (e.data.type === 'chunk') {
-                const imageData = new ImageData(
-                    new Uint8ClampedArray(e.data.buffer),
-                    e.data.width,
-                    e.data.height
-                )
-                setImageData(imageData)
+                const newPoints = e.data.points
+                setPoints(prev => {
+                    const allPoints = [...prev, ...newPoints]
+                    
+                    // Calculate new bounds
+                    if (allPoints.length > 0) {
+                        const bounds = allPoints.reduce((acc, point) => ({
+                            min: Math.min(acc.min, point.iterations),
+                            max: Math.max(acc.max, point.iterations)
+                        }), { min: allPoints[0].iterations, max: allPoints[0].iterations })
+                        
+                        // Update bounds in next tick to avoid state update during render
+                        setTimeout(() => setIterationBounds(bounds), 0)
+                    }
+                    
+                    return allPoints
+                })
                 setProgress(e.data.progress)
             } else if (e.data.type === 'complete') {
-                const imageData = new ImageData(
-                    new Uint8ClampedArray(e.data.buffer),
-                    e.data.width,
-                    e.data.height
-                )
-                setImageData(imageData)
                 setLoading(false)
             }
         }
@@ -514,30 +651,48 @@ export default function Mandelbrot() {
     }, [])
 
     useEffect(() => {
-        calculateSet(params)
+        calculatePoints(params)
         return () => workerRef.current?.terminate()
-    }, [params, calculateSet])
+    }, [params, calculatePoints])
 
-    const handleParamChange = (key: keyof MandelbrotParams, value: any) => {
+    const handleParamChange = (key: keyof FractalParams, value: any) => {
         setParams(prev => ({ ...prev, [key]: value }))
     }
 
-    const renderSelectedRegion = useCallback(() => {
-        if (!selectedRegion) return;
-
-        setParams(prev => ({
-            ...prev,
-            resolution: params?.resolution,
-            zoomRegion: selectedRegion
-        }));
-    }, [selectedRegion, params?.resolution]);
+    const handleReset = () => {
+        setParams(defaultParams)
+    }
 
     return (
         <CanvasContainer ref={canvasContainerRef}>
-            <div className="controls-overlay" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: 1000 }}>
+            <Canvas
+                orthographic
+                camera={{ 
+                    position: [0, 0, 500],
+                    zoom: 1.5,
+                    up: [0, 0, 1], 
+                    far: 10000 
+                }}
+            >
+                <MapControls 
+                    maxZoom={200}
+                    minZoom={0.5}
+                    enableRotate={false}
+                />
+                <PointCloud points={points} />
+            </Canvas>
+            
+            <div className="controls-overlay" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
                 <BackButton onClick={() => window.location.href = '/'}>
                     ← Back
                 </BackButton>
+
+                {!loading && iterationBounds && (
+                    <ColorLegend 
+                        minIterations={iterationBounds.min}
+                        maxIterations={iterationBounds.max}
+                    />
+                )}
 
                 <ControlPanel style={{ pointerEvents: 'auto' }}>
                     <Button onClick={handleReset}>
@@ -546,58 +701,27 @@ export default function Mandelbrot() {
 
                     <ControlWithTooltip 
                         label="Resolution:"
-                        tooltip="Controls the quality of the rendering. Higher resolutions show more detail but take longer to calculate."
+                        tooltip="Controls the density of points. Higher resolution means more detail but slower calculation."
                     >
                         <select 
                             value={params.resolution}
                             onChange={e => handleParamChange('resolution', e.target.value)}
                         >
-                            <option value="low">Low (2048px)</option>
-                            <option value="medium">Medium (4096px)</option>
-                            <option value="high">High (5120px)</option>
-                            <option value="custom">Custom</option>
-                        </select>
-                    </ControlWithTooltip>
-
-                    {params.resolution === 'custom' && (
-                        <ControlWithTooltip 
-                            label="Custom Resolution:"
-                            tooltip="Set your own resolution (width in pixels). Higher values give more detail but take longer to render. Values above 8192 may cause performance issues."
-                        >
-                            <input 
-                                type="number"
-                                min="512"
-                                max="8192"
-                                step="512"
-                                value={params.customResolution}
-                                onChange={e => handleParamChange('customResolution', parseInt(e.target.value))}
-                            />
-                        </ControlWithTooltip>
-                    )}
-
-                    <ControlWithTooltip 
-                        label="Color Scheme:"
-                        tooltip="Different ways to visualize the escape-time of each point. Classic uses rainbow colors, Smooth adds more gradual transitions, and Psychedelic creates repeating color patterns."
-                    >
-                        <select 
-                            value={params.colorScheme}
-                            onChange={e => handleParamChange('colorScheme', e.target.value)}
-                        >
-                            <option value="classic">Classic</option>
-                            <option value="smooth">Smooth</option>
-                            <option value="psychedelic">Psychedelic</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
                         </select>
                     </ControlWithTooltip>
 
                     <ControlWithTooltip 
                         label="Max Iterations:"
-                        tooltip="Maximum number of iterations to determine if a point is in the set. Higher values give more detailed boundaries but increase calculation time."
+                        tooltip="Maximum number of iterations before considering a point to be in the set. Higher values show more detail but take longer to calculate."
                     >
                         <input 
                             type="number"
-                            min="100"
-                            max="2000"
-                            step="100"
+                            step="10"
+                            min="10"
+                            max="1000"
                             value={params.maxIterations}
                             onChange={e => handleParamChange('maxIterations', parseInt(e.target.value))}
                         />
@@ -605,88 +729,42 @@ export default function Mandelbrot() {
 
                     <ControlWithTooltip 
                         label="Escape Radius:"
-                        tooltip="The radius at which a point is considered to have escaped the set. Standard value is 2, but larger values can create interesting effects in the coloring."
+                        tooltip="Distance from origin beyond which a point is considered to have escaped. The standard value is 2."
                     >
                         <input 
                             type="number"
-                            min="2"
-                            max="20"
-                            step="0.5"
+                            step="0.1"
+                            min="1"
+                            max="10"
                             value={params.escapeRadius}
                             onChange={e => handleParamChange('escapeRadius', parseFloat(e.target.value))}
                         />
                     </ControlWithTooltip>
                 </ControlPanel>
-
-                {selectedRegion && (
-                    <Button 
-                        style={{ 
-                            position: 'absolute', 
-                            bottom: '20px', 
-                            left: '50%', 
-                            transform: 'translateX(-50%)',
-                            width: 'auto',
-                            pointerEvents: 'auto',
-                            zIndex: 1000
-                        }}
-                        onClick={renderSelectedRegion}
-                    >
-                        Render Selected Region in High Resolution
-                    </Button>
-                )}
-
-                {selecting && selectionStart && selectionCurrent && (
-                    <SelectionBox 
-                        start={selectionStart} 
-                        current={selectionCurrent}
-                        complexSize={(selectionCurrent as any).complexSize}
-                        rect={(selectionCurrent as any).rect}
-                    />
-                )}
             </div>
-
-            <Canvas
-                orthographic
-                camera={{ 
-                    position: new THREE.Vector3(0, 0, 1),
-                    zoom: 150,
-                    up: [0, 1, 0],
-                    far: 1000,
-                    near: 0.1,
-                    left: -2,
-                    right: 1,
-                    top: 1.5,
-                    bottom: -1.5
-                }}
-                style={{ position: 'relative', zIndex: 1 }}
-                onCreated={({ camera }) => {
-                    setCamera(camera as THREE.OrthographicCamera);
-                    (camera as THREE.OrthographicCamera).lookAt(new THREE.Vector3(0, 0, 0));
-                    camera.updateProjectionMatrix();
-                }}
-            >
-                <MapControls 
-                    maxZoom={5000}
-                    minZoom={50}
-                    enableRotate={false}
-                    screenSpacePanning={true}
-                />
-                <MandelbrotSet imageData={imageData} />
-            </Canvas>
 
             {loading && (
                 <LoadingOverlay>
-                    Rendering Mandelbrot set... {Math.round(progress * 100)}%
-                    <div style={{ fontSize: '0.8em', marginTop: '8px', opacity: 0.8 }}>
-                        {progress < 1 ? 'Partial render visible during calculation' : 'Finalizing...'}
-                    </div>
+                    Calculating Mandelbrot set... {Math.round(progress * 100)}%
                 </LoadingOverlay>
             )}
 
             {mousePos && (
-                <CoordinateTooltip x={mousePos.x} y={mousePos.y}>
-                    c = {mousePos.real.toFixed(6)} + {mousePos.imag.toFixed(6)}i
-                </CoordinateTooltip>
+                <>
+                    <Crosshair x={mousePos.x} y={mousePos.y} />
+                    <CoordinateTooltip x={mousePos.x} y={mousePos.y}>
+                        Re: {mousePos.real.toFixed(3)}, Im: {mousePos.imag.toFixed(3)}
+                    </CoordinateTooltip>
+                </>
+            )}
+
+            {selection && (
+                <SelectionRect
+                    x={Math.min(selection.startX, selection.currentX)}
+                    y={Math.min(selection.startY, selection.currentY)}
+                    width={Math.abs(selection.currentX - selection.startX)}
+                    height={Math.abs(selection.currentY - selection.startY)}
+                />
             )}
         </CanvasContainer>
     )
