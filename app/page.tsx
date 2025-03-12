@@ -12,7 +12,7 @@ export default function Home() {
           <Link href="/fractals/logistic-bifurcation" className={styles.card}>
             <h2>Logistic Bifurcation &rarr;</h2>
             <p>
-              Interactive visualization of the logistic map's bifurcation diagram,
+              Interactive visualization of the logistic map&apos;s bifurcation diagram,
               exploring chaos and complex systems.
             </p>
           </Link>
