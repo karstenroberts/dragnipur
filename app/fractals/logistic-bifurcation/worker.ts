@@ -1,11 +1,33 @@
 interface Point {
     x: number
     y: number
+    iterations: number
 }
 
-const accuracyValue = 0.0001
-const maxIterations = 100
-const warmupIterations = 250
+interface WorkerParams {
+    startR: number
+    endR: number
+    resolution: 'low' | 'medium' | 'high'
+    accuracyValue: number
+    maxIterations: number
+    warmupIterations: number
+}
+
+const CHUNK_SIZE = 0.1 // Calculate in 0.1 r-value chunks
+
+function getStepSizes(resolution: 'low' | 'medium' | 'high', r: number) {
+    const baseMultiplier = resolution === 'low' ? 4 : resolution === 'medium' ? 2 : 1
+    
+    const rStepSize = r > 3 
+        ? 0.0002 * baseMultiplier 
+        : (r > 2.8 ? 0.0001 * baseMultiplier : 0.0005 * baseMultiplier)
+    
+    const xStepSize = r > 3 
+        ? 0.0002 * baseMultiplier 
+        : 0.0003 * baseMultiplier
+
+    return { rStepSize, xStepSize }
+}
 
 function getInitialX(r: number): number {
     // For r < 3, the attractor is at x = (r-1)/r
@@ -16,25 +38,23 @@ function getInitialX(r: number): number {
     return 0.5
 }
 
-function calculatePoints(startR: number): Point[] {
+function calculateChunk(params: WorkerParams, chunkStart: number, chunkEnd: number): Point[] {
     const points: Point[] = []
+    const { resolution, accuracyValue, maxIterations, warmupIterations } = params
     
-    // Adaptive step size - use smaller steps in interesting regions
-    for (let r = startR; r < 4.0;) {
-        // Use finer resolution in the chaotic region and near bifurcation points
-        const stepSize = r > 3 ? 0.0002 : (r > 2.8 ? 0.0001 : 0.0005)
-        r += stepSize
+    for (let r = chunkStart; r < chunkEnd;) {
+        const { rStepSize, xStepSize } = getStepSizes(resolution, r)
+        r += rStepSize
 
-        // Adaptive x sampling - use finer resolution near the attractor
+        if (r >= chunkEnd) break
+
         const initialX = getInitialX(r)
-        const xRange = r > 3 ? 0.4 : 0.2  // Narrower range for non-chaotic regions
-        
-        // Decreased step size for x to get more points
-        const xStepSize = r > 3 ? 0.0002 : 0.0003
+        const xRange = r > 3 ? 0.4 : 0.2
+
         for (let xOffset = -xRange; xOffset <= xRange; xOffset += xStepSize) {
             const x = initialX + xOffset
-            if (x <= 0 || x >= 1) continue  // Skip points outside valid range
-            
+            if (x <= 0 || x >= 1) continue
+
             let currentX = x
             
             // Warmup iterations
@@ -44,11 +64,12 @@ function calculatePoints(startR: number): Point[] {
             
             const baseX = currentX
             let isPartOfCycle = false
+            let iterationCount = 0
             currentX = r * currentX * (1 - currentX)
+            iterationCount++
             
-            // Early exit if we detect stability quickly
             if (Math.abs(currentX - baseX) < accuracyValue) {
-                points.push({ x: r, y: baseX })
+                points.push({ x: r, y: baseX, iterations: iterationCount })
                 continue
             }
             
@@ -58,10 +79,11 @@ function calculatePoints(startR: number): Point[] {
                     break
                 }
                 currentX = r * currentX * (1 - currentX)
+                iterationCount++
             }
             
             if (isPartOfCycle) {
-                points.push({ x: r, y: baseX })
+                points.push({ x: r, y: baseX, iterations: iterationCount })
             }
         }
     }
@@ -70,7 +92,20 @@ function calculatePoints(startR: number): Point[] {
 }
 
 self.onmessage = (e: MessageEvent) => {
-    const startR = e.data.startR
-    const points = calculatePoints(startR)
-    self.postMessage(points)
+    const params: WorkerParams = e.data
+    const { startR, endR } = params
+
+    // Calculate in chunks and stream results
+    for (let chunkStart = startR; chunkStart < endR; chunkStart += CHUNK_SIZE) {
+        const chunkEnd = Math.min(chunkStart + CHUNK_SIZE, endR)
+        const points = calculateChunk(params, chunkStart, chunkEnd)
+        
+        self.postMessage({
+            type: 'chunk',
+            points,
+            progress: (chunkEnd - startR) / (endR - startR)
+        })
+    }
+
+    self.postMessage({ type: 'complete' })
 } 
