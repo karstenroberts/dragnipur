@@ -298,28 +298,29 @@ function PointCloud({ points }: { points: Point[] }) {
             const y = (point.y - 0.5) * 400
             
             tempObject.current.position.set(x, y, 0)
-            tempObject.current.scale.set(0.3, 0.3, 1)
+            // Increase point size to ensure better coverage
+            tempObject.current.scale.set(1.0, 1.0, 1)
             tempObject.current.updateMatrix()
             
             instancedMeshRef.current?.setMatrixAt(i, tempObject.current.matrix)
 
-            // Classic Mandelbrot coloring
+            // Classic Mandelbrot coloring with increased brightness
             const logValue = Math.log(point.iterations)
             const normalizedValue = (logValue - logMin) / logRange
 
-            // Classic color palette: black -> blue -> white
+            // Classic color palette: black -> blue -> white with increased brightness
             if (point.iterations === maxIterations) {
                 // Points in the set are black
                 tempColor.current.setRGB(0, 0, 0)
             } else {
-                // Smooth coloring for escape points
+                // Smooth coloring for escape points with increased brightness
                 const t = normalizedValue
                 if (t < 0.5) {
-                    // Transition from black to blue
+                    // Transition from black to blue with increased brightness
                     const blue = t * 2
                     tempColor.current.setRGB(0, 0, blue)
                 } else {
-                    // Transition from blue to white
+                    // Transition from blue to white with increased brightness
                     const t2 = (t - 0.5) * 2
                     tempColor.current.setRGB(t2, t2, 1)
                 }
@@ -340,7 +341,8 @@ function PointCloud({ points }: { points: Point[] }) {
             ref={instancedMeshRef}
             args={[undefined, undefined, points.length]}
         >
-            <planeGeometry args={[0.5, 0.5]} />
+            {/* Increase the base size of each point */}
+            <planeGeometry args={[1, 1]} />
             <meshBasicMaterial />
         </instancedMesh>
     )
@@ -473,34 +475,32 @@ export default function Mandelbrot() {
         const normalizedX = (relativeX / rect.width) * 2 - 1
         const normalizedY = -((relativeY / rect.height) * 2 - 1)  // Flip Y axis
 
-        // Convert to complex plane coordinates
-        const scale = 4 / params.zoom  // 4 is the width of the Mandelbrot set
-        const real = params.centerX + normalizedX * (scale / 2)
-        const imag = params.centerY + normalizedY * (scale / 2)
+        // Calculate aspect ratio to determine independent scales
+        const aspectRatio = rect.width / rect.height
+        
+        // Calculate independent scales for x and y
+        // The Mandelbrot set is roughly 3 units wide and 2 units tall
+        // Adjust the scales based on aspect ratio to prevent stretching
+        let scaleX, scaleY
+        if (aspectRatio > 1) {
+            // Width is larger than height - adjust horizontal scale
+            scaleX = (3 / params.zoom) * aspectRatio
+            scaleY = 2 / params.zoom
+        } else {
+            // Height is larger than width - adjust vertical scale
+            scaleX = 3 / params.zoom
+            scaleY = (2 / params.zoom) / aspectRatio
+        }
+
+        // Convert to complex plane coordinates using independent scales
+        const real = params.centerX + normalizedX * scaleX
+        const imag = params.centerY + normalizedY * scaleY
 
         return { real, imag }
     }, [params.centerX, params.centerY, params.zoom])
 
-    // Convert complex plane coordinates to screen coordinates
-    const complexToScreenCoords = useCallback((real: number, imag: number) => {
-        if (!canvasContainerRef.current) return null
-
-        const rect = canvasContainerRef.current.getBoundingClientRect()
-        const scale = 4 / params.zoom
-
-        // Convert from complex plane to normalized coordinates
-        const normalizedX = (real - params.centerX) / (scale / 2)
-        const normalizedY = -(imag - params.centerY) / (scale / 2)
-
-        // Convert to screen coordinates
-        const x = ((normalizedX + 1) / 2) * rect.width
-        const y = ((normalizedY + 1) / 2) * rect.height
-
-        return { x, y }
-    }, [params.centerX, params.centerY, params.zoom])
-
     const handleMouseDown = useCallback((e: MouseEvent) => {
-        if (!canvasContainerRef.current) return
+        if (e.button !== 2 || !canvasContainerRef.current) return
 
         // Check if mouse is over any control elements
         const target = e.target as HTMLElement
@@ -559,18 +559,39 @@ export default function Mandelbrot() {
 
         // Only zoom if selection is large enough (at least 10x10 pixels)
         if (width > 10 && height > 10) {
-            // Convert selection corners to complex coordinates
-            const startCoords = screenToComplexCoords(
-                selection.startX + rect.left,
-                selection.startY + rect.top
-            )
-            const endCoords = screenToComplexCoords(x + rect.left, y + rect.top)
+            // Get the min and max points of the selection
+            const minX = Math.min(selection.startX, x)
+            const maxX = Math.max(selection.startX, x)
+            const minY = Math.min(selection.startY, y)
+            const maxY = Math.max(selection.startY, y)
 
-            if (startCoords && endCoords) {
-                // Calculate new center and zoom
-                const newCenterX = (startCoords.real + endCoords.real) / 2
-                const newCenterY = (startCoords.imag + endCoords.imag) / 2
-                const newZoom = params.zoom * (rect.width / width)
+            // Convert selection corners to complex coordinates
+            const topLeft = screenToComplexCoords(minX + rect.left, minY + rect.top)
+            const bottomRight = screenToComplexCoords(maxX + rect.left, maxY + rect.top)
+
+            if (topLeft && bottomRight) {
+                // Calculate the complex width and height of the selection
+                const complexWidth = Math.abs(bottomRight.real - topLeft.real)
+                const complexHeight = Math.abs(bottomRight.imag - topLeft.imag)
+                
+                // Calculate new center
+                const newCenterX = (topLeft.real + bottomRight.real) / 2
+                const newCenterY = (topLeft.imag + bottomRight.imag) / 2
+                
+                // Calculate the new zoom based on both dimensions
+                // Use the smaller factor to ensure the entire selection is visible
+                const screenRatio = rect.width / rect.height
+                let newZoom
+                
+                // Calculate horizontal and vertical zoom factors directly
+                const horizontalZoomFactor = rect.width / width
+                const verticalZoomFactor = rect.height / height
+                
+                // Use the smaller zoom factor to ensure we see the entire selection
+                const zoomFactor = Math.min(horizontalZoomFactor, verticalZoomFactor)
+                
+                // Apply the zoom factor directly to the current zoom
+                newZoom = params.zoom * zoomFactor
 
                 // Update parameters
                 setParams(prev => ({
@@ -660,6 +681,8 @@ export default function Mandelbrot() {
     }
 
     const handleReset = () => {
+        setPoints([])
+        setIterationBounds(null)
         setParams(defaultParams)
     }
 
