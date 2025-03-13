@@ -9,6 +9,14 @@ export default function Home() {
           Welcome to Dragnipur
         </h1>
         <div className={styles.grid}>
+          <Link href="/fractals/mandelbrot" className={styles.card}>
+            <h2>Mandelbrot Set &rarr;</h2>
+            <p>
+              Interactive visualization of the Mandelbrot set with dynamic zooming
+              and real-time coordinate tracking.
+            </p>
+          </Link>
+
           <Link href="/fractals/logistic-bifurcation" className={styles.card}>
             <h2>Logistic Bifurcation &rarr;</h2>
             <p>
