@@ -237,7 +237,7 @@ const LegendLabels = styled.div`
     font-size: clamp(10px, 1.5vw, 12px);
 `
 
-interface Point {
+interface LogisticPoint {
     x: number
     y: number
     iterations: number
@@ -261,7 +261,7 @@ const defaultParams: FractalParams = {
     warmupIterations: 250
 }
 
-function PointCloud({ points }: { points: Point[] }) {
+function PointCloud({ points }: { points: LogisticPoint[] }) {
     const instancedMeshRef = useRef<THREE.InstancedMesh>(null)
     const tempObject = useRef(new THREE.Object3D())
     const tempColor = useRef(new THREE.Color())
@@ -415,8 +415,16 @@ function ColorLegend({ minIterations, maxIterations }: ColorLegendProps) {
     )
 }
 
+function calculateIterationBounds(points: LogisticPoint[]) {
+    if (!points.length) return { min: 0, max: 0 }
+    return points.reduce((acc, point) => ({
+        min: Math.min(acc.min, point.iterations),
+        max: Math.max(acc.max, point.iterations)
+    }), { min: points[0].iterations, max: points[0].iterations })
+}
+
 export default function LogisticBifurcation() {
-    const [points, setPoints] = useState<Point[]>([])
+    const [points, setPoints] = useState<LogisticPoint[]>([])
     const [loading, setLoading] = useState(true)
     const [progress, setProgress] = useState(0)
     const [params, setParams] = useState<FractalParams>(defaultParams)
@@ -506,10 +514,7 @@ export default function LogisticBifurcation() {
                     
                     // Calculate new bounds
                     if (allPoints.length > 0) {
-                        const bounds = allPoints.reduce((acc, point) => ({
-                            min: Math.min(acc.min, point.iterations),
-                            max: Math.max(acc.max, point.iterations)
-                        }), { min: allPoints[0].iterations, max: allPoints[0].iterations })
+                        const bounds = calculateIterationBounds(allPoints)
                         
                         // Update bounds in next tick to avoid state update during render
                         setTimeout(() => setIterationBounds(bounds), 0)

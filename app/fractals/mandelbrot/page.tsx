@@ -249,7 +249,7 @@ const SelectionRect = styled.div<{ x: number; y: number; width: number; height: 
     z-index: 20;
 `
 
-interface Point {
+interface MandelbrotPoint {
     x: number
     y: number
     iterations: number
@@ -273,7 +273,7 @@ const defaultParams: FractalParams = {
     escapeRadius: 10
 }
 
-function PointCloud({ points }: { points: Point[] }) {
+function PointCloud({ points }: { points: MandelbrotPoint[] }) {
     const instancedMeshRef = useRef<THREE.InstancedMesh>(null)
     const tempObject = useRef(new THREE.Object3D())
     const tempColor = useRef(new THREE.Color())
@@ -453,7 +453,7 @@ interface Selection {
 }
 
 export default function Mandelbrot() {
-    const [points, setPoints] = useState<Point[]>([])
+    const [points, setPoints] = useState<MandelbrotPoint[]>([])
     const [loading, setLoading] = useState(true)
     const [progress, setProgress] = useState(0)
     const [params, setParams] = useState<FractalParams>(defaultParams)

@@ -1,10 +1,10 @@
-interface Point {
+interface LogisticPoint {
     x: number
     y: number
     iterations: number
 }
 
-interface WorkerParams {
+interface LogisticWorkerParams {
     startR: number
     endR: number
     resolution: 'low' | 'medium' | 'high'
@@ -13,7 +13,7 @@ interface WorkerParams {
     warmupIterations: number
 }
 
-const CHUNK_SIZE = 0.1 // Calculate in 0.1 r-value chunks
+const LOGISTIC_CHUNK_SIZE = 0.1 // Calculate in 0.1 r-value chunks
 
 function getStepSizes(resolution: 'low' | 'medium' | 'high', r: number) {
     const baseMultiplier = resolution === 'low' ? 4 : resolution === 'medium' ? 2 : 1
@@ -38,8 +38,8 @@ function getInitialX(r: number): number {
     return 0.5
 }
 
-function calculateChunk(params: WorkerParams, chunkStart: number, chunkEnd: number): Point[] {
-    const points: Point[] = []
+function calculateChunk(params: LogisticWorkerParams, chunkStart: number, chunkEnd: number): LogisticPoint[] {
+    const points: LogisticPoint[] = []
     const { resolution, accuracyValue, maxIterations, warmupIterations } = params
     
     for (let r = chunkStart; r < chunkEnd;) {
@@ -92,12 +92,12 @@ function calculateChunk(params: WorkerParams, chunkStart: number, chunkEnd: numb
 }
 
 self.onmessage = (e: MessageEvent) => {
-    const params: WorkerParams = e.data
+    const params: LogisticWorkerParams = e.data
     const { startR, endR } = params
 
     // Calculate in chunks and stream results
-    for (let chunkStart = startR; chunkStart < endR; chunkStart += CHUNK_SIZE) {
-        const chunkEnd = Math.min(chunkStart + CHUNK_SIZE, endR)
+    for (let chunkStart = startR; chunkStart < endR; chunkStart += LOGISTIC_CHUNK_SIZE) {
+        const chunkEnd = Math.min(chunkStart + LOGISTIC_CHUNK_SIZE, endR)
         const points = calculateChunk(params, chunkStart, chunkEnd)
         
         self.postMessage({

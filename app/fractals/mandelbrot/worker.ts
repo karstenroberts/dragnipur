@@ -1,10 +1,10 @@
-interface Point {
+interface MandelbrotPoint {
     x: number
     y: number
     iterations: number
 }
 
-interface WorkerParams {
+interface MandelbrotWorkerParams {
     centerX: number
     centerY: number
     zoom: number
@@ -13,7 +13,7 @@ interface WorkerParams {
     escapeRadius: number
 }
 
-const CHUNK_SIZE = 100 // Calculate in 100x100 pixel chunks
+const MANDELBROT_CHUNK_SIZE = 100 // Calculate in 100x100 pixel chunks
 
 function getResolutionMultiplier(resolution: 'low' | 'medium' | 'high'): number {
     switch (resolution) {
@@ -39,15 +39,15 @@ function calculateMandelbrotPoint(cx: number, cy: number, maxIterations: number,
     return iteration
 }
 
-function calculateChunk(params: WorkerParams, chunkX: number, chunkY: number): Point[] {
-    const points: Point[] = []
+function calculateChunk(params: MandelbrotWorkerParams, chunkX: number, chunkY: number): MandelbrotPoint[] {
+    const points: MandelbrotPoint[] = []
     const { resolution, maxIterations, escapeRadius, centerX, centerY, zoom } = params
     const multiplier = getResolutionMultiplier(resolution)
     const scale = 4 / zoom  // 4 is the width of the Mandelbrot set
     const step = scale / (400 * multiplier)  // 400 is the base resolution
 
-    for (let y = 0; y < CHUNK_SIZE; y++) {
-        for (let x = 0; x < CHUNK_SIZE; x++) {
+    for (let y = 0; y < MANDELBROT_CHUNK_SIZE; y++) {
+        for (let x = 0; x < MANDELBROT_CHUNK_SIZE; x++) {
             // Calculate complex coordinates
             const realX = centerX + (chunkX + x - 200 * multiplier) * step
             const realY = centerY + (chunkY + y - 200 * multiplier) * step
@@ -67,17 +67,17 @@ function calculateChunk(params: WorkerParams, chunkX: number, chunkY: number): P
 }
 
 self.onmessage = (e: MessageEvent) => {
-    const params: WorkerParams = e.data
+    const params: MandelbrotWorkerParams = e.data
     const { resolution } = params
     const multiplier = getResolutionMultiplier(resolution)
-    const totalChunks = Math.ceil(400 * multiplier / CHUNK_SIZE)
+    const totalChunks = Math.ceil(400 * multiplier / MANDELBROT_CHUNK_SIZE)
     const totalPoints = totalChunks * totalChunks
 
     let completedChunks = 0
 
     // Calculate in chunks and stream results
-    for (let y = 0; y < 400 * multiplier; y += CHUNK_SIZE) {
-        for (let x = 0; x < 400 * multiplier; x += CHUNK_SIZE) {
+    for (let y = 0; y < 400 * multiplier; y += MANDELBROT_CHUNK_SIZE) {
+        for (let x = 0; x < 400 * multiplier; x += MANDELBROT_CHUNK_SIZE) {
             const points = calculateChunk(params, x, y)
             
             self.postMessage({
