@@ -39,7 +39,7 @@ function calculateMandelbrotPoint(cx: number, cy: number, maxIterations: number,
     return iteration
 }
 
-function calculateChunk(params: MandelbrotWorkerParams, chunkX: number, chunkY: number): MandelbrotPoint[] {
+function calculateMandelbrotChunk(params: MandelbrotWorkerParams, chunkX: number, chunkY: number): MandelbrotPoint[] {
     const points: MandelbrotPoint[] = []
     const { resolution, maxIterations, escapeRadius, centerX, centerY, zoom } = params
     const multiplier = getResolutionMultiplier(resolution)
@@ -78,7 +78,7 @@ self.onmessage = (e: MessageEvent) => {
     // Calculate in chunks and stream results
     for (let y = 0; y < 400 * multiplier; y += MANDELBROT_CHUNK_SIZE) {
         for (let x = 0; x < 400 * multiplier; x += MANDELBROT_CHUNK_SIZE) {
-            const points = calculateChunk(params, x, y)
+            const points = calculateMandelbrotChunk(params, x, y)
             
             self.postMessage({
                 type: 'chunk',

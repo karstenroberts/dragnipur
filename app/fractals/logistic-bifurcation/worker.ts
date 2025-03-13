@@ -38,7 +38,7 @@ function getInitialX(r: number): number {
     return 0.5
 }
 
-function calculateChunk(params: LogisticWorkerParams, chunkStart: number, chunkEnd: number): LogisticPoint[] {
+function calculateLogisticChunk(params: LogisticWorkerParams, chunkStart: number, chunkEnd: number): LogisticPoint[] {
     const points: LogisticPoint[] = []
     const { resolution, accuracyValue, maxIterations, warmupIterations } = params
     
@@ -98,7 +98,7 @@ self.onmessage = (e: MessageEvent) => {
     // Calculate in chunks and stream results
     for (let chunkStart = startR; chunkStart < endR; chunkStart += LOGISTIC_CHUNK_SIZE) {
         const chunkEnd = Math.min(chunkStart + LOGISTIC_CHUNK_SIZE, endR)
-        const points = calculateChunk(params, chunkStart, chunkEnd)
+        const points = calculateLogisticChunk(params, chunkStart, chunkEnd)
         
         self.postMessage({
             type: 'chunk',
