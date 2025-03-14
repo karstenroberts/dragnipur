@@ -1,7 +1,11 @@
+#version 300 es
+
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+precision highp int;
 #else
 precision mediump float;
+precision mediump int;
 #endif
 
 uniform vec2 center;
@@ -15,6 +19,9 @@ uniform float colorOffset;   // Color offset/phase
 uniform float brightness;    // Overall brightness
 uniform float contrast;      // Color contrast
 
+in vec2 vUv;
+out vec4 fragColor;
+
 vec3 hsv2rgb(vec3 c) {
     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
@@ -22,74 +29,64 @@ vec3 hsv2rgb(vec3 c) {
 }
 
 void main() {
-    // Calculate aspect ratio and scaling factors
+    // Calculate aspect ratio
     float aspectRatio = resolution.x / resolution.y;
-    float viewScale = scale;
     
-    // Adjust scale based on aspect ratio to fit view
-    if (aspectRatio > 1.0) {
-        viewScale *= aspectRatio;
-    } else {
-        viewScale /= aspectRatio;
-    }
+    // Convert UV to complex coordinates with aspect ratio correction
+    vec2 uv = vUv - 0.5;
+    uv.x *= aspectRatio;
+    vec2 c = center + uv * scale * 2.0;
     
-    // Convert pixel coordinates to complex plane coordinates
-    vec2 uv = (gl_FragCoord.xy / resolution - 0.5) * 2.0;  // Map to [-1, 1]
-    if (aspectRatio > 1.0) {
-        uv.x *= aspectRatio;
-    } else {
-        uv.y /= aspectRatio;
-    }
-    uv *= viewScale;
-    vec2 c = center + uv;
-    
-    // Mandelbrot iteration
+    // Initialize iteration variables
     vec2 z = vec2(0.0);
+    vec2 zPrev = vec2(0.0);
     float escapeRadiusSq = escapeRadius * escapeRadius;
+    float i = 0.0;
     
-    // Main iteration loop with smooth coloring
-    float smoothIter = 0.0;
-    int iter;
-    
-    for(int i = 0; i < 1000; i++) {
-        if(i >= maxIterations) break;
+    // Main iteration loop with periodicity checking
+    for (int iter = 0; iter < 1000; iter++) {
+        if (iter >= maxIterations) break;
+        
+        // Store previous z for periodicity check
+        zPrev = z;
         
         // z = z^2 + c
         float x = z.x * z.x - z.y * z.y + c.x;
         float y = 2.0 * z.x * z.y + c.y;
         
-        // Early bailout optimization
-        float mag2 = x * x + y * y;
-        if(mag2 > escapeRadiusSq) {
-            // Smooth iteration count
-            smoothIter = float(i) - log2(log2(mag2)) + 4.0;
-            iter = i;
-            break;
+        z = vec2(x, y);
+        float magnitudeSq = dot(z, z);
+        
+        // Periodicity check (every 20 iterations)
+        if (iter > 0 && mod(float(iter), 20.0) == 0.0) {
+            if (distance(z, zPrev) < 1e-6) {
+                // Point is in a periodic cycle
+                fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                return;
+            }
         }
         
-        z = vec2(x, y);
-        iter = i;
+        if (magnitudeSq > escapeRadiusSq) {
+            // Smooth coloring formula with improved precision
+            float smooth_i = float(iter) + 1.0 - log(log(magnitudeSq) / log(escapeRadiusSq)) / log(2.0);
+            smooth_i = smooth_i / float(maxIterations);
+            
+            // Apply color transformation
+            float hue = fract(smooth_i * colorCycles + colorOffset);
+            vec3 hsv = vec3(hue, baseColor.y, baseColor.z);
+            vec3 rgb = hsv2rgb(hsv);
+            
+            // Apply brightness and contrast
+            rgb = (rgb - 0.5) * contrast + 0.5;
+            rgb *= brightness;
+            
+            fragColor = vec4(rgb, 1.0);
+            return;
+        }
+        
+        i += 1.0;
     }
     
-    // Color the point based on iteration count
-    if(iter >= maxIterations - 1) {
-        // Point is in the set - color it black
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-    } else {
-        // Enhanced smooth coloring
-        float t = smoothIter / float(maxIterations);
-        
-        // Apply contrast
-        t = pow(t, contrast);
-        
-        // Create a more detailed color gradient
-        vec3 hsv = vec3(
-            fract(baseColor.x + colorOffset + colorCycles * t),  // Rotating hue
-            baseColor.y * (0.8 + 0.2 * cos(t * 6.28318)),       // Varying saturation
-            baseColor.z * brightness * pow(t, 0.4)               // Adjusted brightness
-        );
-        
-        vec3 rgb = hsv2rgb(hsv);
-        gl_FragColor = vec4(rgb, 1.0);
-    }
+    // Point is in the set
+    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
 } 

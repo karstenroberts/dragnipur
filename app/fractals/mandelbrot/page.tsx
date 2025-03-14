@@ -93,20 +93,24 @@ const defaultParams: MandelbrotParams = {
     scale: 1.5,
     maxIterations: 100,
     escapeRadius: 2,
-    baseColor: [0.5, 0.8, 1.0],  // Initial HSV color
-    colorCycles: 3.0,            // Number of color cycles
-    colorOffset: 0.0,            // Color phase offset
-    brightness: 1.0,             // Overall brightness
-    contrast: 1.0                // Color contrast
+    baseColor: [0.5, 0.6, 0.9],  // Keeping the muted base color
+    colorCycles: 3.0,
+    colorOffset: 0.0,
+    brightness: 0.85,            // Keeping reduced brightness
+    contrast: 1.2               // Increased contrast to enhance details
 }
 
 // Calculate required iterations based on zoom level
 function calculateRequiredIterations(scale: number): number {
-    // As we zoom in (scale gets smaller), we need more iterations
-    // This is a rough approximation - you might want to tune these values
-    const baseIterations = 100
-    const zoomFactor = Math.max(1, 1 / scale)
-    return Math.min(1000, Math.floor(baseIterations * Math.log2(1 + zoomFactor)))
+    // Base iterations
+    const baseIterations = 100;
+    
+    // Increase iterations logarithmically with zoom
+    const zoomFactor = Math.max(1, 1 / scale);
+    const extraIterations = Math.log2(zoomFactor) * 50;
+    
+    // Cap at 2000 for performance
+    return Math.min(2000, Math.floor(baseIterations + extraIterations));
 }
 
 // Add these helper functions at the top of the file

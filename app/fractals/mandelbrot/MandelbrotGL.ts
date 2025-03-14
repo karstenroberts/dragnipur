@@ -15,7 +15,7 @@ import vertexShaderSource from './shaders/mandelbrot.vert'
 import fragmentShaderSource from './shaders/mandelbrot.frag'
 
 export class MandelbrotGL {
-    private gl: WebGLRenderingContext
+    private gl: WebGL2RenderingContext
     private program: WebGLProgram
     private vertexBuffer: WebGLBuffer
     private uniforms: {
@@ -32,8 +32,11 @@ export class MandelbrotGL {
     }
 
     constructor(canvas: HTMLCanvasElement) {
-        const gl = canvas.getContext('webgl')
-        if (!gl) throw new Error('WebGL not supported')
+        // Request WebGL 2.0 context specifically
+        const gl = canvas.getContext('webgl2')
+        if (!gl) {
+            throw new Error('WebGL 2 not supported')
+        }
         this.gl = gl
 
         // Create shader program
