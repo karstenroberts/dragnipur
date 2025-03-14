@@ -9,6 +9,15 @@ const nextConfig = {
         typedRoutes: true,
     },
     output: 'standalone',
+    webpack: (config) => {
+        // Add rule for shader files
+        config.module.rules.push({
+            test: /\.(vert|frag)$/,
+            type: 'asset/source'
+        })
+        
+        return config
+    }
 }
 
 module.exports = nextConfig
