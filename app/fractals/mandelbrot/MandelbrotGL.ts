@@ -11,8 +11,8 @@ export interface MandelbrotParams {
 }
 
 // Import shaders as raw text
-import vertexShaderSource from './shaders/mandelbrot.vert'
-import fragmentShaderSource from './shaders/mandelbrot.frag'
+import vertexShaderSource from '@/app/fractals/mandelbrot/shaders/mandelbrot.vert'
+import fragmentShaderSource from '@/app/fractals/mandelbrot/shaders/mandelbrot.frag'
 
 export class MandelbrotGL {
     private gl: WebGL2RenderingContext
